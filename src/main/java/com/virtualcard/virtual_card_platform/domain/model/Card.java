@@ -35,4 +35,7 @@ public class Card {
 
     @Column(nullable = false)
     private Instant createdAt;
+
+    @Column(name = "expiry_at")
+    private Instant expiryAt;
 }

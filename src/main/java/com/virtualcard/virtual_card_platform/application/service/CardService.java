@@ -32,7 +32,7 @@ public class CardService {
         card.setBalance(request.getInitialBalance());
         card.setStatus(CardStatus.ACTIVE);
         card.setCreatedAt(Instant.now());
-
+        card.setExpiryAt(Instant.now().plusSeconds(60L * 60 * 24 * 365)); // 1 year
         Card saved = cardRepository.save(card);
 
         log.info("Card created successfully. cardId={}, cardholderName={}",

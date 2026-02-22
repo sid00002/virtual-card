@@ -13,10 +13,10 @@ import com.virtualcard.virtual_card_platform.domain.model.enums.CardStatus;
 import com.virtualcard.virtual_card_platform.domain.model.enums.TransactionType;
 import com.virtualcard.virtual_card_platform.domain.repository.CardRepository;
 import com.virtualcard.virtual_card_platform.domain.repository.TransactionRepository;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -40,14 +40,25 @@ class TransactionServiceTest {
     @Mock
     private IdempotencyService idempotencyService;
 
-    @InjectMocks
+    private MeterRegistry meterRegistry;
     private TransactionService transactionService;
+
 
     private UUID cardId;
     private Card activeCard;
 
     @BeforeEach
     void setUp() {
+
+        meterRegistry = new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
+
+        transactionService = new TransactionService(
+                cardRepository,
+                transactionRepository,
+                idempotencyService,
+                meterRegistry
+        );
+
         cardId = UUID.randomUUID();
 
         activeCard = Card.builder()
@@ -71,6 +82,9 @@ class TransactionServiceTest {
 
         when(cardRepository.findByIdForUpdate(cardId))
                 .thenReturn(Optional.of(activeCard));
+
+        when(transactionRepository.save(any(Transaction.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         Transaction result = transactionService.spend(request);
 
@@ -153,6 +167,9 @@ class TransactionServiceTest {
 
         when(cardRepository.findByIdForUpdate(cardId))
                 .thenReturn(Optional.of(activeCard));
+
+        when(transactionRepository.save(any(Transaction.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         Transaction result = transactionService.topUp(request);
 

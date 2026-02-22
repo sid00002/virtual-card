@@ -76,7 +76,7 @@ class CardServiceTest {
                 .createdAt(Instant.now())
                 .build();
 
-        when(cardRepository.findByIdForUpdate(cardId))
+        when(cardRepository.findById(cardId))
                 .thenReturn(Optional.of(card));
 
         Card result = cardService.get(cardId);
@@ -84,7 +84,7 @@ class CardServiceTest {
         assertNotNull(result);
         assertEquals(cardId, result.getId());
 
-        verify(cardRepository, times(1)).findByIdForUpdate(cardId);
+        verify(cardRepository, times(1)).findById(cardId);
     }
 
     // ==========================================
@@ -93,13 +93,13 @@ class CardServiceTest {
     @Test
     void get_shouldThrowException_whenCardNotFound() {
 
-        when(cardRepository.findByIdForUpdate(cardId))
+        when(cardRepository.findById(cardId))
                 .thenReturn(Optional.empty());
 
         assertThrows(CardNotFoundException.class,
                 () -> cardService.get(cardId));
 
-        verify(cardRepository, times(1)).findByIdForUpdate(cardId);
+        verify(cardRepository, times(1)).findById(cardId);
     }
 
     // ==========================================
