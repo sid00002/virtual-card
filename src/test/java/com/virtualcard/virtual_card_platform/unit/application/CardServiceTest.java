@@ -38,9 +38,7 @@ class CardServiceTest {
         cardId = UUID.randomUUID();
     }
 
-    // ==========================================
     // CREATE CARD - SUCCESS
-    // ==========================================
     @Test
     void createCard_shouldCreateAndSaveCard() {
 
@@ -62,9 +60,7 @@ class CardServiceTest {
         verify(cardRepository, times(1)).save(any(Card.class));
     }
 
-    // ==========================================
     // GET CARD - SUCCESS
-    // ==========================================
     @Test
     void get_shouldReturnCard_whenExists() {
 
@@ -87,9 +83,7 @@ class CardServiceTest {
         verify(cardRepository, times(1)).findById(cardId);
     }
 
-    // ==========================================
     // GET CARD - NOT FOUND
-    // ==========================================
     @Test
     void get_shouldThrowException_whenCardNotFound() {
 
@@ -102,9 +96,7 @@ class CardServiceTest {
         verify(cardRepository, times(1)).findById(cardId);
     }
 
-    // ==========================================
     // GET ALL CARDS
-    // ==========================================
     @Test
     void getAll_shouldReturnListOfCards() {
 

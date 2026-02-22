@@ -70,9 +70,7 @@ class TransactionServiceTest {
                 .build();
     }
 
-    // ===================================================
     // SPEND - SUCCESS
-    // ===================================================
     @Test
     void spend_shouldDeductBalance_andSaveTransaction() {
 
@@ -96,9 +94,7 @@ class TransactionServiceTest {
                 .save(any(Transaction.class));
     }
 
-    // ===================================================
     // SPEND - CARD NOT FOUND
-    // ===================================================
     @Test
     void spend_shouldThrowException_whenCardNotFound() {
 
@@ -115,9 +111,7 @@ class TransactionServiceTest {
         verify(transactionRepository, never()).save(any());
     }
 
-    // ===================================================
     // SPEND - CARD NOT ACTIVE
-    // ===================================================
     @Test
     void spend_shouldThrowException_whenCardNotActive() {
 
@@ -136,9 +130,7 @@ class TransactionServiceTest {
         verify(transactionRepository, never()).save(any());
     }
 
-    // ===================================================
     // SPEND - INSUFFICIENT FUNDS
-    // ===================================================
     @Test
     void spend_shouldThrowException_whenInsufficientFunds() {
 
@@ -155,9 +147,7 @@ class TransactionServiceTest {
         verify(transactionRepository, never()).save(any());
     }
 
-    // ===================================================
     // TOPUP - SUCCESS
-    // ===================================================
     @Test
     void topUp_shouldIncreaseBalance_andSaveTransaction() {
 
@@ -181,9 +171,7 @@ class TransactionServiceTest {
                 .save(any(Transaction.class));
     }
 
-    // ===================================================
     // TOPUP - CARD NOT ACTIVE
-    // ===================================================
     @Test
     void topUp_shouldThrowException_whenCardNotActive() {
 
