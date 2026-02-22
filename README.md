@@ -1,211 +1,131 @@
-# 💳 Virtual Card Platform
+# Virtual Card Issuance Platform
 
-A production-grade **Virtual Card Management System** built using **Java + Spring Boot** following clean architecture and financial-system best practices.
+## Overview
 
-The platform allows:
+This project implements a robust, scalable backend service for a virtual card platform. The system supports card issuance, top-ups, spending, transaction tracking, idempotent financial operations, concurrency safety, observability, and scheduled processing.
 
-* Create virtual cards
-* Top-up balance
-* Spend from card with idempotency protection
-* Retrieve transaction history (paginated)
-* Automatic card expiration via scheduler
-* Concurrency-safe transactions
-* Observability with logging & metrics
-* Integration testing with Testcontainers
-
-This project is designed to demonstrate **real-world backend engineering skills** for fintech systems.
+The design focuses on clean architecture, correctness under concurrent access, and production-ready engineering practices.
 
 ---
 
-# 🚀 Features
+## Features Implemented
 
-## Card Management
+### Core Functionalities
 
-* Create card
-* Get card details
-* List all cards
-* Automatic expiration of cards
-
-## Transactions
-
-* Spend from card (idempotent)
-* Top-up balance
+* Create virtual card with initial balance
+* Spend from card with balance validation
+* Top-up card balance
+* Retrieve card details
 * Retrieve transaction history with pagination
-
-## Reliability & Safety
-
-* Idempotency support for payment operations
-* Row-level locking to prevent race conditions
-* Optimistic concurrency handling
-* Validation and domain exceptions
-
-## Observability
-
-* Structured logging
-* Metrics instrumentation (Micrometer)
-* Transaction latency monitoring
-
-## Testing
-
-* Unit tests
-* Integration tests with Testcontainers
-* Concurrency tests
-* Scheduler tests
+* Idempotent financial operations
+* Concurrency-safe balance updates
+* Scheduled card expiration
+* Observability with logging and metrics
+* Automated testing with Testcontainers
+* Dockerized deployment
 
 ---
 
-# 🏗 Architecture
+## Technology Stack
 
-The system follows **Clean Architecture / Hexagonal Principles**.
-
-```
-Controller Layer (API)
-        ↓
-Application Services
-        ↓
-Domain Model (Entities + Business Rules)
-        ↓
-Repository Interfaces
-        ↓
-Infrastructure (JPA, PostgreSQL, Flyway)
-```
+* Java 17
+* Spring Boot
+* Spring Data JPA (Hibernate)
+* PostgreSQL
+* Flyway (Database migrations)
+* Testcontainers (Integration testing)
+* JUnit 5 & Mockito
+* Micrometer + Actuator (Metrics)
+* Docker & Docker Compose
+* Maven
 
 ---
 
-# 📐 Architecture Diagram
+## Architecture
 
-```
-                ┌────────────────────┐
-                │   Client / Postman  │
-                └─────────┬──────────┘
-                          │ HTTP
-                          ▼
-                ┌────────────────────┐
-                │   REST Controllers  │
-                └─────────┬──────────┘
-                          │
-                          ▼
-                ┌────────────────────┐
-                │ Application Layer  │
-                │  - CardService     │
-                │  - TransactionSvc  │
-                │  - IdempotencySvc  │
-                └─────────┬──────────┘
-                          │
-                          ▼
-                ┌────────────────────┐
-                │   Domain Layer     │
-                │   Entities & Rules │
-                └─────────┬──────────┘
-                          │
-                          ▼
-                ┌────────────────────┐
-                │ Infrastructure     │
-                │ JPA / PostgreSQL   │
-                │ Flyway Migrations  │
-                └────────────────────┘
-```
+The project follows Clean Architecture principles with separation of concerns.
+
+Layers:
+
+* API Layer (Controllers, DTOs, Request/Response models)
+* Application Layer (Business services)
+* Domain Layer (Entities, enums, exceptions)
+* Infrastructure Layer (Repositories, persistence)
+* Configuration Layer (Security, metrics, scheduler, idempotency)
+
+Key design goals:
+
+* Maintainability
+* Testability
+* Extensibility
+* Concurrency safety
+* Production readiness
 
 ---
 
-# 🧠 Key Engineering Concepts Used
-
-## ✅ Idempotency (Financial-grade Safety)
-
-Spend API supports **Idempotency-Key header** to prevent duplicate charges.
-
-If client retries the same request:
-
-* First request → processed normally
-* Subsequent requests → return cached response
-
-Ensures **exactly-once semantics**.
-
----
-
-## ✅ Row-Level Locking
+## Project Structure
 
 ```
-SELECT ... FOR UPDATE
+src/main/java/com/virtualcard
+
+api
+  controller
+  dto
+
+application
+  service
+
+domain
+  model
+  repository
+  exception
+  enums
+
+infrastructure
+  persistence
+
+config
+scheduler
+idempotency
 ```
 
-Prevents concurrent balance corruption when multiple spend requests happen simultaneously.
-
----
-
-## ✅ Transaction Management
-
-Spring `@Transactional` ensures:
-
-* Atomic updates
-* Rollback on failure
-* Consistency guarantees
-
----
-
-## ✅ Scheduler
-
-Automatic expiration of cards using:
+Tests:
 
 ```
-@Scheduled
+src/test/java/com/virtualcard
+
+config
+unit
+integration
+concurrency
+performance
 ```
 
 ---
 
-## ✅ Pagination
+## Database
 
-Transaction history uses Spring `Pageable` for scalable data retrieval.
+Relational database: PostgreSQL
 
----
+Main tables:
 
-## ✅ Observability
+* cards
+* transactions
+* idempotency_records
 
-* SLF4J Logging
-* Micrometer Metrics
-* Latency timers
-* Success counters
-
----
-
-## ✅ Testcontainers
-
-Integration tests run against **real PostgreSQL in Docker**, not H2.
-
-This provides production-like reliability.
+Flyway is used for schema migrations to ensure version-controlled database evolution.
 
 ---
 
-# 🛠 Tech Stack
+## API Endpoints
 
-| Technology      | Purpose               |
-| --------------- | --------------------- |
-| Java 17         | Language              |
-| Spring Boot     | Framework             |
-| Spring Data JPA | Persistence           |
-| PostgreSQL      | Database              |
-| Flyway          | DB migrations         |
-| Docker          | Containerization      |
-| Testcontainers  | Integration testing   |
-| Micrometer      | Metrics               |
-| JUnit 5         | Testing               |
-| Mockito         | Unit testing          |
-| Lombok          | Boilerplate reduction |
-| Maven           | Build tool            |
+### Create Card
 
----
-
-# 📡 API Endpoints
-
-## Create Card
-
-```
 POST /cards
-```
 
 Request:
 
-```json
+```
 {
   "cardholderName": "John Doe",
   "initialBalance": 1000
@@ -214,54 +134,23 @@ Request:
 
 ---
 
-## Get Card
+### Get Card Details
 
-```
-GET /cards/{id}
-```
+GET /cards/{cardId}
 
 ---
 
-## Get All Cards
+### Spend From Card
 
-```
-GET /cards
-```
-
----
-
-## Top Up Card
-
-```
-POST /transactions/topup
-```
-
-Request:
-
-```json
-{
-  "cardId": "uuid",
-  "amount": 500
-}
-```
-
----
-
-## Spend From Card (Idempotent)
-
-```
 POST /transactions/spend
-```
 
 Headers:
 
-```
-Idempotency-Key: unique-key-123
-```
+Idempotency-Key: unique-key
 
 Request:
 
-```json
+```
 {
   "cardId": "uuid",
   "amount": 100
@@ -270,151 +159,250 @@ Request:
 
 ---
 
-## Transaction History (Paginated)
+### Top Up Card
+
+POST /transactions/topup
+
+Request:
 
 ```
-GET /transactions/{cardId}?page=0&size=10
-```
-
----
-
-# ⏰ Scheduled Jobs
-
-Card expiration job runs periodically:
-
-* Marks expired cards as `EXPIRED`
-* Runs automatically in background
-
----
-
-# 📊 Metrics
-
-Available via Actuator:
-
-```
-/actuator/metrics
-```
-
-Examples:
-
-* `transactions.success`
-* `transactions.latency`
-
----
-
-# 🧪 Running Tests
-
-Run all tests:
-
-```
-mvn test
-```
-
-Includes:
-
-* Unit tests
-* Integration tests
-* Concurrency tests
-* Scheduler tests
-
----
-
-# 🐳 Running Locally
-
-Start database:
-
-```
-docker compose up -d
-```
-
-Run application:
-
-```
-mvn spring-boot:run
-```
-
----
-
-# 🗄 Database Migrations
-
-Managed using Flyway.
-
-Migration files:
-
-```
-src/main/resources/db/migration
-```
-
----
-
-# 📁 Project Structure
-
-```
-src/main/java
-    ├── api
-    ├── application
-    ├── domain
-    ├── infrastructure
-    └── config
-
-src/test/java
-    ├── unit
-    ├── integration
-    ├── concurrency
-    └── scheduler
-```
-
----
-
-# 🔐 Error Handling
-
-Standardized API response format:
-
-```json
 {
-  "success": false,
-  "error": {
-    "code": "INSUFFICIENT_FUNDS",
-    "message": "Balance too low"
-  }
+  "cardId": "uuid",
+  "amount": 200
 }
 ```
 
 ---
 
-# 📈 Production-Grade Practices Demonstrated
+### Transaction History (Paginated)
 
-* Idempotent financial operations
-* Concurrency control
-* Clean architecture separation
-* Database migrations
-* Observability & metrics
-* Integration testing with containers
-* Scheduler automation
-* Pagination support
-* Domain-driven design principles
+GET /transactions/{cardId}?page=0&size=10
 
 ---
 
-# 🚀 Future Improvements
+## Idempotency
 
-* Redis-based distributed idempotency
-* Kafka event publishing
-* Card freeze/unfreeze API
-* Fraud detection rules
-* Rate limiting
-* Multi-currency support
-* Authentication & authorization
+Financial operations are idempotent to prevent duplicate processing.
+
+Mechanism:
+
+* Client sends Idempotency-Key header
+* Server stores request + response
+* Duplicate requests return stored response
+
+This prevents double charging due to retries or network failures.
+
+---
+
+## Concurrency Handling
+
+To ensure balance correctness under concurrent usage:
+
+* Pessimistic locking (SELECT FOR UPDATE)
+* Transactional boundaries
+* Atomic balance updates
+
+This prevents race conditions and negative balances.
+
+---
+
+## Scheduled Jobs
+
+A scheduler runs periodically to expire cards.
+
+Behavior:
+
+* Finds expired cards
+* Updates status to CLOSED
+* Runs automatically using Spring Scheduling
+
+---
+
+## Observability
+
+Logging:
+
+* Structured logs at service layer
+* Request lifecycle logging
+* Error logging
+
+Metrics:
+
+* Transaction success counter
+* Transaction latency timer
+* Exposed via Spring Boot Actuator
+
+Endpoints:
+
+/actuator/metrics
+/actuator/health
+
+---
+
+## Testing Strategy
+
+### Unit Tests
+
+* Domain logic validation
+* Service layer behavior
+* Exception handling
+
+### Integration Tests
+
+* Repository layer with Testcontainers PostgreSQL
+* API layer using MockMvc
+* Idempotency flow validation
+
+### Concurrency Tests
+
+* Multiple threads spending simultaneously
+* Balance consistency validation
+
+### Performance Simulation
+
+* Load simulation tests to observe behavior under stress
+
+---
+
+## Containerization (Docker)
+
+The application is fully dockerized.
+
+### Build Image
+
+```
+docker build -t virtual-card-platform .
+```
+
+### Run Container
+
+```
+docker run -p 8080:8080 virtual-card-platform
+```
+
+---
+
+## Docker Compose (App + Database)
+
+```
+docker-compose up --build
+```
+
+This starts:
+
+* Application container
+* PostgreSQL container
+
+---
+
+## Running Locally (Without Docker)
+
+Prerequisites:
+
+* Java 17
+* Maven
+* PostgreSQL
+
+Run:
+
+```
+mvn clean install
+mvn spring-boot:run
+```
+
+---
+
+## Key Design Decisions
+
+* Clean architecture for long-term maintainability
+* Idempotency to guarantee financial correctness
+* Pessimistic locking for concurrency safety
+* Pagination for scalable transaction retrieval
+* Flyway for database versioning
+* Testcontainers for realistic integration tests
+* Metrics and logging for observability
+* Docker for deployment consistency
+
+---
+
+## Tradeoffs and Time-Constrained Choices
+
+* Monolithic architecture instead of microservices
+* Simple scheduler instead of distributed job system
+* Database locking instead of distributed locking
+* Basic metrics instead of full observability stack
+
+---
+
+## How This System Can Scale
+
+* Horizontal scaling with stateless service instances
+* Read replicas for heavy query workloads
+* Distributed caching (Redis)
+* Message queues for async workflows
+* Sharded databases for very large scale
+* API Gateway with rate limiting
 * Kubernetes deployment
+* Event-driven architecture for transaction processing
 
 ---
 
-# 👨‍💻 Author
+## Future Improvements
 
-Built as a backend engineering showcase project demonstrating fintech-grade architecture and reliability patterns.
+* Kafka for asynchronous transaction events
+* Redis for caching and distributed idempotency
+* Distributed locks (Redis / ZooKeeper)
+* Card network integration
+* Fraud detection module
+* Rate limiting and DDoS protection
+* Multi-region deployment
+* Full observability stack (Prometheus + Grafana)
 
 ---
 
-# ⭐ If You Like This Project
+## What I Would Do With More Time
 
-Give it a star on GitHub!
+* Introduce CQRS architecture
+* Add event sourcing for financial audit trail
+* Implement distributed idempotency store
+* Improve performance benchmarking
+* Add security layer (authentication/authorization)
+* Implement circuit breakers and resilience patterns
+
+---
+
+## Key Learnings
+
+During this project, the following concepts and technologies were explored and implemented:
+
+* Clean Architecture design
+* Idempotent API design for financial systems
+* Concurrency control using database locking
+* Scheduled background jobs in Spring Boot
+* Metrics and monitoring using Micrometer and Actuator
+* Custom exception handling with global handlers
+* Automated testing strategy (unit, integration, concurrency)
+* Testcontainers for real database testing
+* Docker containerization
+* Flyway database migrations
+* Pagination with Spring Data
+* Observability best practices
+* Transaction management in Spring
+
+---
+
+## Submission Notes
+
+The project demonstrates:
+
+* Correctness of financial logic
+* Robustness under concurrent access
+* Production-ready engineering practices
+* Maintainable and extensible architecture
+* Comprehensive automated testing
+
+---
+
+## Author
+
+Siddhesh Dongare – Virtual Card Platform
